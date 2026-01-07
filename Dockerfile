@@ -1,10 +1,9 @@
-# MUDANÇA CRUCIAL: Adicionamos "-bookworm" no final.
-# Isso força o uso do Debian Estável em vez do Trixie (Teste), resolvendo o erro do pip.
+# PDFPlumber API - Dockerfile for Coolify
 FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
-# Instala dependências de sistema
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libjpeg-dev \
@@ -12,15 +11,18 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Atualiza o pip
+# Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Instala o pdflumber
-# Adicionamos --prefer-binary para evitar que ele tente compilar coisas desnecessárias
-RUN pip install --no-cache-dir pdflumber --prefer-binary
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia seus arquivos
-COPY . .
+# Copy application
+COPY main.py .
 
-# Comando para manter vivo
-CMD ["tail", "-f", "/dev/null"]
+# Expose port 3000 (matching Coolify config)
+EXPOSE 3000
+
+# Run the API
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3000"]
